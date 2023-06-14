@@ -1,12 +1,15 @@
-import { userModel } from "../model/userSchema.js";
-import jwt from "jsonwebtoken";
-import { transporter } from "../config/NodeMailer.js";
 import {} from "dotenv/config";
+import jwt from "jsonwebtoken";
+import bcrypt from "bcrypt";
+import { userModel } from "../model/userSchema.js";
+import { transporter } from "../config/NodeMailer.js";
 
 let userDetails = {
   user: null,
   otp: null,
 };
+
+const saltRounds = 10;
 
 const createToken = (id) => {
   return jwt.sign({ id }, process.env.TOKEN_KEY, { expiresIn: "1d" });
@@ -64,10 +67,21 @@ export const authControllers = {
       if (req.headers.client_otp != userDetails.otp)
         res.json({ status: false, message: `invalid otp` });
       else {
-        const user = await userModel.create(userDetails.user);
-        const token = createToken(user._id);
-        userDetails = null;
-        res.status(200).json({ status: true, token: token });
+        bcrypt.hash(
+          userDetails.user.password,
+          saltRounds,
+          async (err, hash) => {
+            if (err)
+              res.json({ status: false, message: "something went wrong" });
+            else {
+              userDetails.user.password = hash;
+              const user = await userModel.create(userDetails.user);
+              const token = createToken(user._id);
+              userDetails = null;
+              res.status(200).json({ status: true, token: token });
+            }
+          }
+        );
       }
     } catch (error) {
       res.json({ status: false, message: "something went wrong" });
@@ -79,9 +93,16 @@ export const authControllers = {
       const { email, password } = req.headers;
       const userDetails = await userModel.findOne({ email: email });
       if (userDetails) {
-        if (userDetails.google === false && password === userDetails.password) {
-          const token = createToken(userDetails._id);
-          res.json({ status: true, token });
+        if (userDetails.google === false) {
+          const passwordResult = await bcrypt.compare(
+            password,
+            userDetails.password
+          );
+          if (passwordResult) {
+            const token = createToken(userDetails._id);
+            res.json({ status: true, token });
+          } else
+            res.json({ status: false, message: `email or password incurrect` });
         } else
           res.json({ status: false, message: `email or password incurrect` });
       } else res.json({ status: false, message: `couldn't find email` });
@@ -101,5 +122,5 @@ export const authControllers = {
     } catch (error) {
       res.json({ status: false, message: "something went wrong" });
     }
-  }, 
+  },
 };
