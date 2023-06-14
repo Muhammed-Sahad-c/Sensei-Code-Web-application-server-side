@@ -1,5 +1,5 @@
-import express from "express";
 import cors from "cors";
+import express from "express";
 import {} from "dotenv/config";
 import bodyParser from "body-parser";
 import { connectToDataBase } from "./config/database.js";

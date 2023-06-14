@@ -1,18 +1,13 @@
+import bcrypt from "bcrypt";
 import {} from "dotenv/config";
 import jwt from "jsonwebtoken";
-import bcrypt from "bcrypt";
 import { userModel } from "../model/userSchema.js";
 import { transporter } from "../config/NodeMailer.js";
 
-let userDetails = {
-  user: null,
-  otp: null,
-};
-
 const saltRounds = 10;
 
-const createToken = (id) => {
-  return jwt.sign({ id }, process.env.TOKEN_KEY, { expiresIn: "1d" });
+const createToken = (id, expiryTime) => {
+  return jwt.sign({ id }, process.env.TOKEN_KEY, { expiresIn: expiryTime });
 };
 
 const otpGenerator = () => {
@@ -28,8 +23,8 @@ export const authControllers = {
         res.json({ status: false, message: `email already registered` });
       else {
         const user = await userModel.create(req.body);
-        // const token = createToken(user._id);
-        res.status(200).json({ status: true });
+        const token = createToken(user._id, "1d");
+        res.status(200).json({ status: true, token: token });
       }
     } catch (error) {
       res.json({ status: false, message: `Something went wront try again!` });
@@ -44,7 +39,7 @@ export const authControllers = {
         res.json({ status: false, message: `email already registered` });
       else {
         let otp = otpGenerator();
-        userDetails = { user: req.body, otp: otp };
+        const token = createToken({ user: req.body, otp: otp }, `300`);
         let info = await transporter.sendMail({
           from: process.env.DEV_EMAIL,
           to: email,
@@ -55,36 +50,31 @@ export const authControllers = {
             otp +
             "</h1>",
         });
-        res.status(200).json({ status: true });
+        res.status(200).json({ status: true, token: token });
       }
     } catch (error) {
       res.json({ status: false, message: `couldn't sent otp` });
+      throw error;
     }
   },
 
   verifyOtp: async (req, res) => {
     try {
-      if (req.headers.client_otp != userDetails.otp)
-        res.json({ status: false, message: `invalid otp` });
-      else {
-        bcrypt.hash(
-          userDetails.user.password,
-          saltRounds,
-          async (err, hash) => {
-            if (err)
-              res.json({ status: false, message: "something went wrong" });
-            else {
-              userDetails.user.password = hash;
-              const user = await userModel.create(userDetails.user);
-              const token = createToken(user._id);
-              userDetails = null;
-              res.status(200).json({ status: true, token: token });
-            }
+      let userDetails = req.body.userDetails.id;
+      if (req.headers.client_otp == userDetails.otp) {
+        userDetails = userDetails.user;
+        bcrypt.hash(userDetails.password, saltRounds, async (err, hash) => {
+          if (err) res.json({ status: false, message: "something went wrong" });
+          else {
+            userDetails.password = hash;
+            const user = await userModel.create(userDetails);
+            const token = createToken(user._id, "1d");
+            res.status(200).json({ status: true, token: token });
           }
-        );
-      }
+        });
+      } else res.json({ status: false, message: "invalid otp" });
     } catch (error) {
-      res.json({ status: false, message: "something went wrong" });
+      res.json({ status: false, message: "something went wrongs" });
     }
   },
 
@@ -99,7 +89,7 @@ export const authControllers = {
             userDetails.password
           );
           if (passwordResult) {
-            const token = createToken(userDetails._id);
+            const token = createToken(userDetails._id, "1d");
             res.json({ status: true, token });
           } else
             res.json({ status: false, message: `email or password incurrect` });
@@ -116,11 +106,32 @@ export const authControllers = {
       const { email } = req.headers;
       const userDetails = await userModel.findOne({ email: email });
       if (userDetails && userDetails.google === true) {
-        const token = createToken(userDetails._id);
+        const token = createToken(userDetails._id, "1d");
         res.json({ status: true, token });
       } else res.json({ status: false, message: `couldn't find email` });
     } catch (error) {
       res.json({ status: false, message: "something went wrong" });
     }
+  },
+
+  getUserDetails: async (req, res) => {
+    try {
+      console.log(req.body);
+      const userDetails = await userModel.findOne({ _id: req.body.id });
+      console.log(userDetails);
+      const { userName, email, profile } = userDetails;
+      res.json({
+        status: true,
+        message: "succesfull",
+        userInfo: { userName, email, profile },
+      });
+    } catch (error) {
+      res.json({ staus: false, message: "something went wrong!" });
+    }
+  },
+
+  getDetailsForOtp: (req, res) => {
+    if (userDetails !== null) res.json(true);
+    else res.json(false);
   },
 };
