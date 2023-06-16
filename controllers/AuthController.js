@@ -17,6 +17,7 @@ const otpGenerator = () => {
 export const authControllers = {
   signupWithGoogleDataSubmission: async (req, res) => {
     try {
+      console.log(req.body);
       const { email } = req.body;
       const alreadyUser = await userModel.findOne({ email: email });
       if (alreadyUser)
@@ -39,7 +40,7 @@ export const authControllers = {
         res.json({ status: false, message: `email already registered` });
       else {
         let otp = otpGenerator();
-        const token = createToken({ user: req.body, otp: otp }, `300`);
+        const token = createToken({ user: req.body, otp: otp }, "1d");
         let info = await transporter.sendMail({
           from: process.env.DEV_EMAIL,
           to: email,
@@ -119,11 +120,11 @@ export const authControllers = {
       console.log(req.body);
       const userDetails = await userModel.findOne({ _id: req.body.id });
       console.log(userDetails);
-      const { userName, email, profile } = userDetails;
+      const { userName, email, profile, bio, about } = userDetails;
       res.json({
         status: true,
         message: "succesfull",
-        userInfo: { userName, email, profile },
+        userInfo: { userName, email, profile, bio, about },
       });
     } catch (error) {
       res.json({ staus: false, message: "something went wrong!" });
@@ -133,5 +134,5 @@ export const authControllers = {
   getDetailsForOtp: (req, res) => {
     if (userDetails !== null) res.json(true);
     else res.json(false);
-  },
+  }, 
 };
