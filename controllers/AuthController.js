@@ -17,7 +17,6 @@ const otpGenerator = () => {
 export const authControllers = {
   signupWithGoogleDataSubmission: async (req, res) => {
     try {
-      console.log(req.body);
       const { email } = req.body;
       const alreadyUser = await userModel.findOne({ email: email });
       if (alreadyUser)
@@ -117,9 +116,7 @@ export const authControllers = {
 
   getUserDetails: async (req, res) => {
     try {
-      console.log(req.body);
       const userDetails = await userModel.findOne({ _id: req.body.id });
-      console.log(userDetails);
       const { userName, email, profile, bio, about } = userDetails;
       res.json({
         status: true,
