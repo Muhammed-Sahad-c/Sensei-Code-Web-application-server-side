@@ -20,7 +20,6 @@ export const qasectionControllers = {
       const questions = await qaModel
         .find()
         .populate("userId", ["userName", "email"]);
-
       const response = [];
       for (let item of questions) {
         response.push({

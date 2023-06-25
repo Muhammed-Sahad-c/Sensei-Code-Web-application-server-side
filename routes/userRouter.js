@@ -1,8 +1,9 @@
 import express from "express";
 export const router = express.Router();
+import upload from "../Middlewares/Multer.js";
 import { authControllers } from "../controllers/AuthController.js";
-import { compilerControllers } from "../controllers/CompilerControllers.js";
 import { profileControllers } from "../controllers/ProfileControllers.js";
+import { compilerControllers } from "../controllers/CompilerControllers.js";
 import { qasectionControllers } from "../controllers/QAsessionControllers.js";
 import {
   retriveUserSignUpDetails,
@@ -30,5 +31,12 @@ router.post(
 );
 router.get("/getQuestions", qasectionControllers.getAllQuestions);
 
-// rpofile routes
+// pofile routes
 router.get("/getrandomuser", profileControllers.getRandomUserDetails);
+router.post("/updateuserdetails", profileControllers.updateEditedUserDetails);
+router.post(
+  "/updateimage",
+  upload.single("file"),
+  userAuthentication,
+  profileControllers.updateUserProfilePicture
+);
