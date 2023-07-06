@@ -30,6 +30,8 @@ router.post(
   qasectionControllers.submitQuestion
 );
 router.get("/getQuestions", qasectionControllers.getAllQuestions);
+router.get("/getquestion", qasectionControllers.getQuestionDetails);
+router.post("/addnewcomment",qasectionControllers.addNewComment);
 
 // pofile routes
 router.get("/getrandomuser", profileControllers.getRandomUserDetails);

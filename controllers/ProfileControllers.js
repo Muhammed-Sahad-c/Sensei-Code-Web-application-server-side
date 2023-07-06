@@ -2,7 +2,7 @@ import fs from "fs";
 import cloudinary from "../config/Cloudinary.js";
 import { userModel } from "../model/userSchema.js";
 
-const updateErrorMessage = `oops! couldin't create!`;
+const updateErrorMessage = `oops! couldn't create!`;
 
 export const profileControllers = {
   getRandomUserDetails: async (req, res) => {

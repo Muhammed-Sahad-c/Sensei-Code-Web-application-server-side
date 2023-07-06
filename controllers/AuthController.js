@@ -5,6 +5,7 @@ import { userModel } from "../model/userSchema.js";
 import { transporter } from "../config/NodeMailer.js";
 
 const saltRounds = 10;
+const wrongMessage = `something went' wrong!`;
 
 const createToken = (id, expiryTime) => {
   return jwt.sign({ id }, process.env.TOKEN_KEY, { expiresIn: expiryTime });
@@ -27,7 +28,7 @@ export const authControllers = {
         res.status(200).json({ status: true, token: token });
       }
     } catch (error) {
-      res.json({ status: false, message: `Something went wront try again!` });
+      res.json({ status: false, message: wrongMessage });
     }
   },
 
@@ -64,7 +65,7 @@ export const authControllers = {
       if (req.headers.client_otp == userDetails.otp) {
         userDetails = userDetails.user;
         bcrypt.hash(userDetails.password, saltRounds, async (err, hash) => {
-          if (err) res.json({ status: false, message: "something went wrong" });
+          if (err) res.json({ status: false, message: wrongMessage });
           else {
             userDetails.password = hash;
             const user = await userModel.create(userDetails);
@@ -74,7 +75,7 @@ export const authControllers = {
         });
       } else res.json({ status: false, message: "invalid otp" });
     } catch (error) {
-      res.json({ status: false, message: "something went wrongs" });
+      res.json({ status: false, message: wrongMessage });
     }
   },
 
@@ -97,7 +98,7 @@ export const authControllers = {
           res.json({ status: false, message: `email or password incurrect` });
       } else res.json({ status: false, message: `couldn't find email` });
     } catch (error) {
-      res.json({ status: false, message: "something went wrong" });
+      res.json({ status: false, message: wrongMessage });
     }
   },
 
@@ -110,7 +111,7 @@ export const authControllers = {
         res.json({ status: true, token });
       } else res.json({ status: false, message: `couldn't find email` });
     } catch (error) {
-      res.json({ status: false, message: "something went wrong" });
+      res.json({ status: false, message: wrongMessage });
     }
   },
 
@@ -124,12 +125,12 @@ export const authControllers = {
         userInfo: { userName, email, profile, bio, about },
       });
     } catch (error) {
-      res.json({ staus: false, message: "something went wrong!" });
+      res.json({ staus: false, message: wrongMessage });
     }
   },
 
   getDetailsForOtp: (req, res) => {
     if (userDetails !== null) res.json(true);
     else res.json(false);
-  }, 
+  },
 };

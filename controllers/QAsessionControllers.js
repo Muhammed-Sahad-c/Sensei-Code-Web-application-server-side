@@ -1,5 +1,6 @@
 import { qaModel } from "../model/QASchema.js";
 import { userModel } from "../model/userSchema.js";
+import { statusMessages } from "../constants/statusMessages.js";
 
 export const qasectionControllers = {
   submitQuestion: async (req, res) => {
@@ -24,6 +25,7 @@ export const qasectionControllers = {
       for (let item of questions) {
         response.push({
           question: item.questionHeading,
+          questionId: item._id,
           userName: item.userId.userName,
           userMail: item.userId.email,
           time: item.createdAt.toString().split(" "),
@@ -32,7 +34,51 @@ export const qasectionControllers = {
 
       res.json({ status: true, questions: response });
     } catch (error) {
-      res.json({ status: false, message: "something went wrong!" });
+      res.json({ status: false, message: statusMessages[0] });
+      throw error;
+    }
+  },
+
+  getQuestionDetails: async (req, res, next) => {
+    try {
+      const data = await qaModel
+        .findOne({ _id: req.headers.questionid })
+        .populate("userId", ["userName", "email"]);
+      res.status(200).json({
+        status: true,
+        details: {
+          userName: data.userId.userName,
+          email: data.userId.email,
+          question: data.questionHeading,
+          questionPage: data.question,
+          comments: data.comments.reverse(),
+        },
+      });
+    } catch (error) {
+      res.status(301).json({ status: false, message: statusMessages[0] });
+      throw err;
+    }
+  },
+
+  addNewComment: async (req, res) => {
+    try {
+      const { userMail, comment, time, questionId, author } = req.body;
+      const updatedDetails = await qaModel.findOneAndUpdate(
+        { _id: questionId },
+        {
+          $push: {
+            comments: {
+              author: author,
+              email: userMail,
+              comment: comment,
+              time: time,
+            },
+          },
+        }
+      );
+      res.status(201).json({ status: true });
+    } catch (error) {
+      res.status(301).json({ status: false, message: `couldn't create` });
       throw error;
     }
   },
