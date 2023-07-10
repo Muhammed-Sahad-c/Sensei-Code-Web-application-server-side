@@ -1,6 +1,7 @@
 import { qaModel } from "../model/QASchema.js";
 import { userModel } from "../model/userSchema.js";
 import { statusMessages } from "../constants/statusMessages.js";
+import { notificationModel } from "../model/NotificationSchema.js";
 
 export const qasectionControllers = {
   submitQuestion: async (req, res) => {
@@ -62,7 +63,8 @@ export const qasectionControllers = {
 
   addNewComment: async (req, res) => {
     try {
-      const { userMail, comment, time, questionId, author } = req.body;
+      const { userMail, comment, time, questionId, author, ownerEmail } =
+        req.body;
       const updatedDetails = await qaModel.findOneAndUpdate(
         { _id: questionId },
         {
@@ -71,11 +73,32 @@ export const qasectionControllers = {
               author: author,
               email: userMail,
               comment: comment,
-              time: time,
+              time: new Date().toString(),
             },
           },
         }
       );
+
+      if (userMail !== ownerEmail) {
+        const pushNotification = await notificationModel.findOneAndUpdate(
+          { userMail: ownerEmail },
+          {
+            $push: {
+              notifications: {
+                NotificationType: `COMMENT`,
+                status: true,
+                content: {
+                  commentedUser: author,
+                  comment: comment,
+                  id: questionId,
+                  time: new Date().toString(),
+                },
+              },
+            },
+          }
+        );
+      }
+
       res.status(201).json({ status: true });
     } catch (error) {
       res.status(301).json({ status: false, message: `couldn't create` });

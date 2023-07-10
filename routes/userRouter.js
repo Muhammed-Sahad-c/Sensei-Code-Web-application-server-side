@@ -9,6 +9,8 @@ import {
   retriveUserSignUpDetails,
   userAuthentication,
 } from "../Middlewares/Authentication.js";
+import { notificationControllers } from "../controllers/NotificationControllers.js";
+import { dashboardControllers } from "../controllers/DashboardControllers.js";
 
 //sign up
 router.post("/signupdatasubmission", authControllers.signupDataSubmission);
@@ -31,7 +33,7 @@ router.post(
 );
 router.get("/getQuestions", qasectionControllers.getAllQuestions);
 router.get("/getquestion", qasectionControllers.getQuestionDetails);
-router.post("/addnewcomment",qasectionControllers.addNewComment);
+router.post("/addnewcomment", qasectionControllers.addNewComment);
 
 // pofile routes
 router.get("/getrandomuser", profileControllers.getRandomUserDetails);
@@ -42,3 +44,12 @@ router.post(
   userAuthentication,
   profileControllers.updateUserProfilePicture
 );
+
+//notification Controllers
+router.get(
+  "/getunreadednotifications",
+  notificationControllers.getUnreadedNotifications
+);
+
+//dashboard services
+router.get("/getdashboarinfo", dashboardControllers.getNotificationCounts);

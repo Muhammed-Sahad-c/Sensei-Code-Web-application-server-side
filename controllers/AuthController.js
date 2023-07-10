@@ -3,6 +3,7 @@ import {} from "dotenv/config";
 import jwt from "jsonwebtoken";
 import { userModel } from "../model/userSchema.js";
 import { transporter } from "../config/NodeMailer.js";
+import { notificationModel } from "../model/NotificationSchema.js";
 
 const saltRounds = 10;
 const wrongMessage = `something went' wrong!`;
@@ -91,6 +92,39 @@ export const authControllers = {
           );
           if (passwordResult) {
             const token = createToken(userDetails._id, "1d");
+            const isHaveNotification = await notificationModel.findOne({
+              userMail: email,
+            });
+            if (!isHaveNotification) {
+              const newNotification = {
+                userMail: email,
+                notifications: [
+                  {
+                    NotificationType: "LOGIN",
+                    content: { message: "Login success full" },
+                    status: true,
+                    time: new Date().toString(),
+                  },
+                ],
+              };
+              const createNotification = await notificationModel.create(
+                newNotification
+              );
+            } else {
+              const pushNotification = await notificationModel.findOneAndUpdate(
+                { userMail: email },
+                {
+                  $push: {
+                    notifications: {
+                      NotificationType: "LOGIN",
+                      content: { message: "Login success full" },
+                      status: true,
+                      time: new Date().toString(),
+                    },
+                  },
+                }
+              );
+            }
             res.json({ status: true, token });
           } else
             res.json({ status: false, message: `email or password incurrect` });
@@ -108,10 +142,44 @@ export const authControllers = {
       const userDetails = await userModel.findOne({ email: email });
       if (userDetails && userDetails.google === true) {
         const token = createToken(userDetails._id, "1d");
+        const isHaveNotification = await notificationModel.findOne({
+          userMail: email,
+        });
+        if (!isHaveNotification) {
+          const newNotification = {
+            userMail: email,
+            notifications: [
+              {
+                NotificationType: "LOGIN",
+                content: { message: "Login success full" },
+                status: true,
+                time: new Date().toString(),
+              },
+            ],
+          };
+          const createNotification = await notificationModel.create(
+            newNotification
+          );
+        } else {
+          const pushNotification = await notificationModel.findOneAndUpdate(
+            { userMail: email },
+            {
+              $push: {
+                notifications: {
+                  NotificationType: "LOGIN",
+                  content: { message: "Login success full" },
+                  status: true,
+                  time: new Date().toString(),
+                },
+              },
+            }
+          );
+        }
         res.json({ status: true, token });
       } else res.json({ status: false, message: `couldn't find email` });
     } catch (error) {
       res.json({ status: false, message: wrongMessage });
+      throw error;
     }
   },
 
