@@ -26,10 +26,44 @@ export const authControllers = {
       else {
         const user = await userModel.create(req.body);
         const token = createToken(user._id, "1d");
+        const isHaveNotification = await notificationModel.findOne({
+          userMail: email,
+        });
+        if (!isHaveNotification) {
+          const newNotification = {
+            userMail: email,
+            notifications: [
+              {
+                NotificationType: "SIGN UP",
+                content: { message: "Welcome to Sensei code" },
+                status: true,
+                time: new Date().toString(),
+              },
+            ],
+          };
+          const createNotification = await notificationModel.create(
+            newNotification
+          );
+        } else {
+          const pushNotification = await notificationModel.findOneAndUpdate(
+            { userMail: email },
+            {
+              $push: {
+                notifications: {
+                  NotificationType: "SIGN UP",
+                  content: { message: "Welcome to sensei code" },
+                  status: true,
+                  time: new Date().toString(),
+                },
+              },
+            }
+          );
+        }
         res.status(200).json({ status: true, token: token });
       }
     } catch (error) {
       res.json({ status: false, message: wrongMessage });
+      throw error;
     }
   },
 
@@ -71,6 +105,39 @@ export const authControllers = {
             userDetails.password = hash;
             const user = await userModel.create(userDetails);
             const token = createToken(user._id, "1d");
+            const isHaveNotification = await notificationModel.findOne({
+              userMail: email,
+            });
+            if (!isHaveNotification) {
+              const newNotification = {
+                userMail: email,
+                notifications: [
+                  {
+                    NotificationType: "SIGN UP",
+                    content: { message: "Welcome to Sensei code" },
+                    status: true,
+                    time: new Date().toString(),
+                  },
+                ],
+              };
+              const createNotification = await notificationModel.create(
+                newNotification
+              );
+            } else {
+              const pushNotification = await notificationModel.findOneAndUpdate(
+                { userMail: email },
+                {
+                  $push: {
+                    notifications: {
+                      NotificationType: "SIGN UP",
+                      content: { message: "Welcome to sensei code" },
+                      status: true,
+                      time: new Date().toString(),
+                    },
+                  },
+                }
+              );
+            }
             res.status(200).json({ status: true, token: token });
           }
         });

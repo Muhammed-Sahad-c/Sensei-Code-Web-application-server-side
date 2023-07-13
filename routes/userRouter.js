@@ -52,4 +52,4 @@ router.get(
 );
 
 //dashboard services
-router.get("/getdashboarinfo", dashboardControllers.getNotificationCounts);
+router.get("/test", dashboardControllers.getNotificationCounts);

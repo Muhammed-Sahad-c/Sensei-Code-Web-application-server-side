@@ -8,7 +8,13 @@ import { router as adminRouter } from "./routes/adminRouter.js";
 
 const app = express();
 
-app.use(cors());
+app.use(
+  cors({
+    origin: "http://localhost:3000",
+    methods: ["GET", "POST"],
+    credentials: true,
+  })
+);
 app.use(bodyParser.json());
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));

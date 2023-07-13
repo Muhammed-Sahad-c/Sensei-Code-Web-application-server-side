@@ -7,7 +7,7 @@ export const dashboardControllers = {
         const notificationCounts = await notificationModel.aggregate([
           {
             $match: {
-              userMail:req.headers.email,
+              userMail: req.headers.email,
             },
           },
           {
@@ -35,6 +35,7 @@ export const dashboardControllers = {
       } else
         res.status(200).json({ status: false, message: `user not logged in` });
     } catch (error) {
+      console.log(error.message);
       res
         .status(301)
         .json({ status: false, message: `something went wrong..` });

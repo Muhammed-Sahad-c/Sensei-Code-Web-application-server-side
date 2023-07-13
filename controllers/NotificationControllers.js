@@ -16,6 +16,7 @@ export const notificationControllers = {
           .json({ status: true, notifications: notifications.notifications });
       }
     } catch (error) {
+      console.log(error)
       throw error;
     }
   },
