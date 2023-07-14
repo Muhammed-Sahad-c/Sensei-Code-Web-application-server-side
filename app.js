@@ -26,25 +26,32 @@ const io = cofigureSocket(server);
 let onlineUsers = [];
 
 const addUser = (email, socketId) => {
-  let online = onlineUsers.some((user) => {
-    return user.email === email;
-  });
-  if (online === false) onlineUsers.push({ email, socketId });
+  !onlineUsers.some((user) => user.email === email) &&
+    onlineUsers.push({ email, socketId });
 };
 
 const removeUser = (socketId) => {
-  let online = onlineUsers.some((user, index) => {
-    if (user.socketId === socketId) return index;
+  onlineUsers = onlineUsers.filter((user) => user.socketId !== socketId);
+};
+
+const getUserSocketId = (email) => {
+  let online = " ";
+  onlineUsers.map((details) => {
+    if (details.email === email) online = details;
   });
-  onlineUsers.splice(online, 1);
+  return online;
 };
 
 io.on("connection", (socket) => {
   socket.on("newuser", (email) => {
     addUser(email, socket.id);
-    console.log("-----------------------------------------------");
+    console.log("----------------------------------------------- added");
     onlineUsers.map((x) => console.log(x.email + "    " + x.socketId));
     console.log("-----------------------------------------------");
+  });
+  socket.on("sendnotifications", (data) => {
+    const reciever = getUserSocketId(data.ownerEmail);
+    socket.to(reciever?.socketId).emit("recievenotification", data);
   });
   socket.on("disconnect", () => {
     removeUser(socket.id);
