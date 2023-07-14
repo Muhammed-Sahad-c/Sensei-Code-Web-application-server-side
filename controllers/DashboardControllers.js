@@ -29,7 +29,6 @@ export const dashboardControllers = {
           status: true,
           counts: {
             notificationCount: notificationCounts[0].notificationCount,
-            chatCounts: 0,
           },
         });
       } else

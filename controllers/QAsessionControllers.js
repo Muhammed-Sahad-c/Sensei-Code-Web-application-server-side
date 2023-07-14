@@ -98,7 +98,6 @@ export const qasectionControllers = {
           }
         );
       }
-
       res.status(201).json({ status: true });
     } catch (error) {
       res.status(301).json({ status: false, message: `couldn't create` });
