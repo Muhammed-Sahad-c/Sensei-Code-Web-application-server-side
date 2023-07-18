@@ -8,13 +8,23 @@ export const profileControllers = {
   getRandomUserDetails: async (req, res) => {
     try {
       const user = await userModel.findOne({ email: req.headers.email });
-      const { userName, email, bio, about, profile } = user;
+      const { userName, email, bio, about, profile, followers } = user;
+      const follow = followers.includes(req.headers.req_user);
+      const followerCount = followers.length;
       res.status(200).json({
         status: true,
-        userDetails: { userName, email, bio, about, profile },
+        userDetails: {
+          userName,
+          email,
+          bio,
+          about,
+          profile,
+          follow,
+          followerCount,
+        },
       });
     } catch (error) {
-      res.json({ status: false, message: `couldn't find user` });
+      res.status(301).json({ status: false, message: `couldn't find user` });
     }
   },
 
@@ -45,6 +55,21 @@ export const profileControllers = {
       res
         .status(301)
         .json({ status: false, message: `couldn't update porfile` });
+    }
+  },
+
+  followAUser: async (req, res) => {
+    try {
+      const { followerEmail, accountEmail } = req.body;
+      const accoutDetails = await userModel.updateOne(
+        { email: accountEmail },
+        { $push: { followers: followerEmail } }
+      );
+      res.status(201).json({ status: true });
+    } catch (error) {
+      res
+        .status(301)
+        .json({ status: false, message: `something went wrong try again` });
     }
   },
 };

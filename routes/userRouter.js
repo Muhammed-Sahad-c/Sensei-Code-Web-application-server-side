@@ -22,8 +22,8 @@ router.get("/signin", authControllers.signinDataValidation);
 router.get("/signinwithgoogle", authControllers.signinWithGoogleDataValidation);
 
 // user Auth
-router.get("/getuser", userAuthentication, authControllers.getUserDetails);
 router.get("/getotpdetails", authControllers.getDetailsForOtp);
+router.get("/getuser", userAuthentication, authControllers.getUserDetails);
 
 //qa session
 router.post(
@@ -44,6 +44,7 @@ router.post(
   userAuthentication,
   profileControllers.updateUserProfilePicture
 );
+router.post("/followauser", profileControllers.followAUser);
 
 //notification Controllers
 router.get(

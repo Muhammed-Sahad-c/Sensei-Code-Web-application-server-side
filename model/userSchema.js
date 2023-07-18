@@ -6,9 +6,12 @@ const usersSchema = new Schema({
   password: { type: String },
   profile: { type: String, default: null },
   google: { type: Boolean, default: false },
-  about: {type:String, Default:""},
-  bio: {type:String, Default:""}
+  about: { type: String, Default: "" },
+  bio: { type: String, Default: "" },
+  followers: {
+    type: [String],
+    unique: true,
+  },
 });
 
 export const userModel = mongoose.model("users", usersSchema);
- 
