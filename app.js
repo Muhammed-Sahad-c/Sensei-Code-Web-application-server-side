@@ -51,7 +51,17 @@ io.on("connection", (socket) => {
   });
   socket.on("sendnotifications", (data) => {
     const reciever = getUserSocketId(data.ownerEmail);
-    socket.to(reciever?.socketId).emit("recievenotification", data);
+    const { time, questionId, comment, author } = data;
+    socket.to(reciever?.socketId).emit("recievenotification", {
+      NotificationType: "COMMENT",
+      content: {
+        commentedUser: author,
+        comment: comment,
+        id: questionId,
+        time: time.join(" "),
+      },
+      status: true,
+    });
   });
   socket.on("disconnect", () => {
     removeUser(socket.id);

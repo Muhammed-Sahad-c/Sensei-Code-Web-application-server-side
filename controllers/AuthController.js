@@ -106,11 +106,11 @@ export const authControllers = {
             const user = await userModel.create(userDetails);
             const token = createToken(user._id, "1d");
             const isHaveNotification = await notificationModel.findOne({
-              userMail: email,
+              userMail: user.email,
             });
             if (!isHaveNotification) {
               const newNotification = {
-                userMail: email,
+                userMail: user.email,
                 notifications: [
                   {
                     NotificationType: "SIGN UP",
