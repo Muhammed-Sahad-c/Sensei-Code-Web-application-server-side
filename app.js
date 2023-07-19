@@ -51,9 +51,9 @@ const getUserSocketId = (email) => {
 io.on("connection", (socket) => {
   socket.on("newuser", (email) => {
     addUser(email, socket.id);
-    console.log("----------------------------------------------- added");
-    onlineUsers.map((x) => console.log(x.email + "    " + x.socketId));
-    console.log("-----------------------------------------------");
+    // console.log("----------------------------------------------- added");
+    // onlineUsers.map((x) => console.log(x.email + "    " + x.socketId));
+    // console.log("-----------------------------------------------");
   });
   socket.on("sendnotifications", (data) => {
     const reciever = getUserSocketId(data.ownerEmail);
@@ -71,9 +71,9 @@ io.on("connection", (socket) => {
   });
   socket.on("disconnect", () => {
     removeUser(socket.id);
-    console.log("----------------------------------------------- removed");
-    onlineUsers.map((x) => console.log(x.email + "    " + x.socketId));
-    console.log("-----------------------------------------------");
+    // console.log("----------------------------------------------- removed");
+    // onlineUsers.map((x) => console.log(x.email + "    " + x.socketId));
+    // console.log("-----------------------------------------------");
   });
 });
 

@@ -80,26 +80,26 @@ export const qasectionControllers = {
         }
       );
 
-      // //updating it to notifications
-      // if (userMail !== ownerEmail) {
-      //   const pushNotification = await notificationModel.findOneAndUpdate(
-      //     { userMail: ownerEmail },
-      //     {
-      //       $push: {
-      //         notifications: {
-      //           NotificationType: `COMMENT`,
-      //           status: true,
-      //           content: {
-      //             commentedUser: author,
-      //             comment: comment,
-      //             id: questionId,
-      //             time: new Date().toString(),
-      //           },
-      //         },
-      //       },
-      //     }
-      //   );
-      // }
+      //updating it to notifications
+      if (userMail !== ownerEmail) {
+        const pushNotification = await notificationModel.findOneAndUpdate(
+          { userMail: ownerEmail },
+          {
+            $push: {
+              notifications: {
+                NotificationType: `COMMENT`,
+                status: true,
+                content: {
+                  commentedUser: author,
+                  comment: comment,
+                  id: questionId,
+                  time: new Date().toString(),
+                },
+              },
+            },
+          }
+        );
+      }
       res.status(201).json({ status: true });
     } catch (error) {
       res.status(301).json({ status: false, message: `couldn't create` });
