@@ -6,6 +6,7 @@ const updateErrorMessage = `oops! couldn't create!`;
 
 export const profileControllers = {
   getRandomUserDetails: async (req, res) => {
+    console.log("hai")
     try {
       const user = await userModel.findOne({ email: req.headers.email });
       const { userName, email, bio, about, profile, followers } = user;

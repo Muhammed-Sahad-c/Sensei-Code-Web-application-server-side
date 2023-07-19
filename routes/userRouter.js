@@ -33,7 +33,11 @@ router.post(
 );
 router.get("/getQuestions", qasectionControllers.getAllQuestions);
 router.get("/getquestion", qasectionControllers.getQuestionDetails);
-router.post("/addnewcomment", qasectionControllers.addNewComment);
+router.post(
+  "/addnewcomment",
+  userAuthentication,
+  qasectionControllers.addNewComment
+);
 
 // pofile routes
 router.get("/getrandomuser", profileControllers.getRandomUserDetails);

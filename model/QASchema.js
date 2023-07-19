@@ -8,8 +8,7 @@ const qaSchema = new Schema(
     questionHeading: { type: String },
     comments: [
       {
-        email: String,
-        author: String,
+        author: { type: mongoose.Schema.Types.ObjectId, ref: "users" },
         comment: String,
         time: Array,
       },
