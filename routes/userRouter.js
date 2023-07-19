@@ -39,16 +39,29 @@ router.post(
   qasectionControllers.addNewComment
 );
 
-// pofile routes
-router.get("/getrandomuser", profileControllers.getRandomUserDetails);
-router.post("/updateuserdetails", profileControllers.updateEditedUserDetails);
+// Profile Routes
+router.get(
+  "/getrandomuser",
+  userAuthentication,
+  profileControllers.getRandomUserDetails
+);
+router.post(
+  "/updateuserdetails",
+  userAuthentication,
+  profileControllers.updateEditedUserDetails
+);
 router.post(
   "/updateimage",
   upload.single("file"),
   userAuthentication,
   profileControllers.updateUserProfilePicture
 );
-router.post("/followauser", profileControllers.followAUser);
+router.post("/followauser", userAuthentication, profileControllers.followAUser);
+router.post(
+  "/unfollowuser",
+  userAuthentication,
+  profileControllers.unfollowAUser
+);
 
 //notification Controllers
 router.get(

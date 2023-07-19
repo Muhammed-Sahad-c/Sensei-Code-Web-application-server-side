@@ -72,4 +72,19 @@ export const profileControllers = {
         .json({ status: false, message: `something went wrong try again` });
     }
   },
+
+  unfollowAUser: async (req, res) => {
+    try {
+      const { followerEmail, accountEmail } = req.body;
+      const accoutDetails = await userModel.updateOne(
+        { email: accountEmail },
+        { $pull: { followers: followerEmail } }
+      );
+      res.status(200).json({ status: true });
+    } catch (error) {
+      res
+        .status(301)
+        .json({ status: false, message: `something went wrong try again` });
+    }
+  },
 };
