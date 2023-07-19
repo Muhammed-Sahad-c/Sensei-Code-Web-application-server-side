@@ -29,6 +29,7 @@ export const qasectionControllers = {
           questionId: item._id,
           userName: item.userId.userName,
           userMail: item.userId.email,
+          comments:item.comments.length,
           time: item.createdAt.toString().split(" "),
         });
       }
@@ -45,7 +46,7 @@ export const qasectionControllers = {
       const data = await qaModel
         .findOne({ _id: req.headers.questionid })
         .populate("userId", ["userName", "email"])
-        .populate("comments.author", ["userName", "email"]);
+        .populate("comments.author", ["userName", "email", "profile"]);
 
       res.status(200).json({
         status: true,
