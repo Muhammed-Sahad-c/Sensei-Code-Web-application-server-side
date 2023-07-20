@@ -25,7 +25,7 @@ router.get("/signinwithgoogle", authControllers.signinWithGoogleDataValidation);
 router.get("/getotpdetails", authControllers.getDetailsForOtp);
 router.get("/getuser", userAuthentication, authControllers.getUserDetails);
 
-//qa session
+//qa session Routes
 router.post(
   "/submitqustion",
   userAuthentication,
@@ -38,6 +38,7 @@ router.post(
   userAuthentication,
   qasectionControllers.addNewComment
 );
+router.post("/addnewvote", userAuthentication, qasectionControllers.addNewVote);
 
 // Profile Routes
 router.get(

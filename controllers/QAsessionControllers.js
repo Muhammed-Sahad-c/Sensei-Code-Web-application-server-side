@@ -10,11 +10,13 @@ export const qasectionControllers = {
         userId: req.body.id,
         question: req.body.question,
         questionHeading: req.body.questionHeading,
+        questionTags: req.body.questionTags,
       };
       const response = await qaModel.create(data);
       res.json({ status: true });
     } catch (error) {
       res.json({ status: false, message: "something went wrong!" });
+      throw error;
     }
   },
   getAllQuestions: async (req, res) => {
@@ -29,7 +31,7 @@ export const qasectionControllers = {
           questionId: item._id,
           userName: item.userId.userName,
           userMail: item.userId.email,
-          comments:item.comments.length,
+          comments: item.comments.length,
           time: item.createdAt.toString().split(" "),
         });
       }
@@ -51,16 +53,19 @@ export const qasectionControllers = {
       res.status(200).json({
         status: true,
         details: {
-          userName: data.userId.userName,
+          votes: data.votes.length,
           email: data.userId.email,
-          question: data.questionHeading,
           questionPage: data.question,
+          userName: data.userId.userName,
+          question: data.questionHeading,
+          questionTags: data.questionTags,
           comments: data.comments.reverse(),
+          haveVoted: data.votes.includes(req.headers.req_email),
         },
       });
     } catch (error) {
       res.status(301).json({ status: false, message: statusMessages[0] });
-      throw err;
+      throw error;
     }
   },
 
@@ -91,9 +96,9 @@ export const qasectionControllers = {
                 NotificationType: `COMMENT`,
                 status: true,
                 content: {
-                  commentedUser: author,
-                  comment: comment,
                   id: questionId,
+                  comment: comment,
+                  commentedUser: author,
                   time: new Date().toString(),
                 },
               },
@@ -105,6 +110,23 @@ export const qasectionControllers = {
     } catch (error) {
       res.status(301).json({ status: false, message: `couldn't create` });
       throw error;
+    }
+  },
+
+  addNewVote: async (req, res) => {
+    try {
+      const { doc_id, type, email } = req.body;
+      if (type === "QUESTION") {
+        const updateNewVote = await qaModel.updateOne(
+          { _id: doc_id },
+          { $push: { votes: email } }
+        );
+        res.status(201).json({ status: true });
+      } else if (type === "ANSWER") {
+        console.log("Answer");
+      }
+    } catch (error) {
+      res.status(301).json({ status: false, message: `something wen't wrong` });
     }
   },
 };

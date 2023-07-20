@@ -6,6 +6,7 @@ const qaSchema = new Schema(
     userId: { type: mongoose.Schema.Types.ObjectId, ref: "users" },
     question: { type: String },
     questionHeading: { type: String },
+    questionTags: { type: [String], default: [] },
     comments: [
       {
         author: { type: mongoose.Schema.Types.ObjectId, ref: "users" },
@@ -13,6 +14,7 @@ const qaSchema = new Schema(
         time: Array,
       },
     ],
+    votes: { type: [String], default: [] },
   },
   { timestamps: true }
 );
