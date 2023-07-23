@@ -2,6 +2,7 @@ import { qaModel } from "../model/QASchema.js";
 import { userModel } from "../model/userSchema.js";
 import { statusMessages } from "../constants/statusMessages.js";
 import { notificationModel } from "../model/NotificationSchema.js";
+import { answerModel } from "../model/AnswerSchema.js";
 
 export const qasectionControllers = {
   submitQuestion: async (req, res) => {
@@ -24,14 +25,18 @@ export const qasectionControllers = {
       const questions = await qaModel
         .find()
         .populate("userId", ["userName", "email"]);
+      console.log(questions);
       const response = [];
       for (let item of questions) {
         response.push({
-          question: item.questionHeading,
           questionId: item._id,
-          userName: item.userId.userName,
           userMail: item.userId.email,
+          votesCount: item.votes.length,
+          question: item.questionHeading,
+          userName: item.userId.userName,
           comments: item.comments.length,
+          questionTags: item.questionTags,
+          answersCount: item.answers.length,
           time: item.createdAt.toString().split(" "),
         });
       }
@@ -123,10 +128,51 @@ export const qasectionControllers = {
         );
         res.status(201).json({ status: true });
       } else if (type === "ANSWER") {
-        console.log("Answer");
+        const updateVoteInAnswer = await answerModel.updateOne(
+          { _id: doc_id },
+          { $push: { votes: email } }
+        );
+        res.status(201).json({ status: true });
       }
     } catch (error) {
       res.status(301).json({ status: false, message: `something wen't wrong` });
+    }
+  },
+
+  submitUserAnswer: async (req, res) => {
+    try {
+      const { questionId, answer, id } = req.body;
+      const data = {
+        answer,
+        questionId,
+        userId: id,
+      };
+      const updateAnswer = await answerModel.create(data);
+      const updateAnswerInQuestions = await qaModel.updateOne(
+        { _id: questionId },
+        { $push: { answers: updateAnswer._id } }
+      );
+      res.status(201).json({ status: true });
+    } catch (error) {
+      res
+        .status(301)
+        .json({ status: false, message: `something went wrong try again!` });
+    }
+  },
+
+  getAllAnswersForTheQuestion: async (req, res) => {
+    try {
+      console.log(req.headers.questionid);
+      const answers = await answerModel
+        .find({
+          questionId: req.headers.questionid,
+        })
+        .populate("userId", ["userName", "email", "profile"]);
+      res.status(200).json({ status: true, answers: answers });
+    } catch (error) {
+      res
+        .status(301)
+        .json({ status: false, message: `something went wrong try again!` });
     }
   },
 };

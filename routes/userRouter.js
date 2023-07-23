@@ -1,16 +1,16 @@
 import express from "express";
 export const router = express.Router();
 import upload from "../Middlewares/Multer.js";
-import { authControllers } from "../controllers/AuthController.js";
-import { profileControllers } from "../controllers/ProfileControllers.js";
-import { compilerControllers } from "../controllers/CompilerControllers.js";
-import { qasectionControllers } from "../controllers/QAsessionControllers.js";
 import {
   retriveUserSignUpDetails,
   userAuthentication,
 } from "../Middlewares/Authentication.js";
-import { notificationControllers } from "../controllers/NotificationControllers.js";
+import { authControllers } from "../controllers/AuthController.js";
+import { profileControllers } from "../controllers/ProfileControllers.js";
+import { compilerControllers } from "../controllers/CompilerControllers.js";
+import { qasectionControllers } from "../controllers/QAsessionControllers.js";
 import { dashboardControllers } from "../controllers/DashboardControllers.js";
+import { notificationControllers } from "../controllers/NotificationControllers.js";
 
 //sign up
 router.post("/signupdatasubmission", authControllers.signupDataSubmission);
@@ -38,9 +38,20 @@ router.post(
   userAuthentication,
   qasectionControllers.addNewComment
 );
+router.post(
+  "/addnewanswer",
+  userAuthentication,
+  qasectionControllers.submitUserAnswer
+);
 router.post("/addnewvote", userAuthentication, qasectionControllers.addNewVote);
+router.get("/getallanswers", qasectionControllers.getAllAnswersForTheQuestion);
 
 // Profile Routes
+router.post(
+  "/unfollowuser",
+  userAuthentication,
+  profileControllers.unfollowAUser
+);
 router.get(
   "/getrandomuser",
   userAuthentication,
@@ -58,11 +69,6 @@ router.post(
   profileControllers.updateUserProfilePicture
 );
 router.post("/followauser", userAuthentication, profileControllers.followAUser);
-router.post(
-  "/unfollowuser",
-  userAuthentication,
-  profileControllers.unfollowAUser
-);
 
 //notification Controllers
 router.get(

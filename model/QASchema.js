@@ -15,6 +15,10 @@ const qaSchema = new Schema(
       },
     ],
     votes: { type: [String], default: [] },
+    answers: {
+      type: [String],
+      default: [],
+    },
   },
   { timestamps: true }
 );
