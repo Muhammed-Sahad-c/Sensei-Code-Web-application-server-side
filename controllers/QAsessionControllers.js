@@ -14,6 +14,9 @@ export const qasectionControllers = {
         questionTags: req.body.questionTags,
       };
       const response = await qaModel.create(data);
+      const userData = await userModel.findOne({ _id: data.userId });
+      userData.points += 10;
+      const updatePoints = await userData.save();
       res.json({ status: true });
     } catch (error) {
       res.json({ status: false, message: "something went wrong!" });
@@ -25,13 +28,12 @@ export const qasectionControllers = {
       const questions = await qaModel
         .find()
         .populate("userId", ["userName", "email"]);
-      console.log(questions);
       const response = [];
       for (let item of questions) {
         response.push({
           questionId: item._id,
           userMail: item.userId.email,
-          votesCount: item.votes.length,
+          votesCount: item.votes.length || 0,
           question: item.questionHeading,
           userName: item.userId.userName,
           comments: item.comments.length,
@@ -41,9 +43,9 @@ export const qasectionControllers = {
         });
       }
 
-      res.json({ status: true, questions: response });
+      res.status(200).json({ status: true, questions: response });
     } catch (error) {
-      res.json({ status: false, message: statusMessages[0] });
+      res.status(401).json({ status: false, message: statusMessages[0] });
       throw error;
     }
   },
@@ -54,7 +56,6 @@ export const qasectionControllers = {
         .findOne({ _id: req.headers.questionid })
         .populate("userId", ["userName", "email"])
         .populate("comments.author", ["userName", "email", "profile"]);
-
       res.status(200).json({
         status: true,
         details: {
@@ -69,7 +70,7 @@ export const qasectionControllers = {
         },
       });
     } catch (error) {
-      res.status(301).json({ status: false, message: statusMessages[0] });
+      res.status(401).json({ status: false, message: statusMessages[0] });
       throw error;
     }
   },
@@ -151,6 +152,28 @@ export const qasectionControllers = {
       const updateAnswerInQuestions = await qaModel.updateOne(
         { _id: questionId },
         { $push: { answers: updateAnswer._id } }
+      );
+      const userData = await userModel.findOne({ _id: data.userId });
+      userData.points += 10;
+      const updatePoints = await userData.save();
+      const question = await qaModel
+        .findOne({ _id: questionId })
+        .populate("userId", ["userName", "email"]);
+      const createNotification = await notificationModel.findOneAndUpdate(
+        { userMail: question.userId.email },
+        {
+          $push: {
+            notifications: {
+              NotificationType: `ANSWER`,
+              status: true,
+              content: {
+                id: data.questionId,
+                user: question.userId.userName,
+                time: new Date().toString(),
+              },
+            },
+          },
+        }
       );
       res.status(201).json({ status: true });
     } catch (error) {

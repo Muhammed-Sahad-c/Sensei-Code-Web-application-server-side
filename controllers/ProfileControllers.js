@@ -1,5 +1,6 @@
 import fs from "fs";
 import cloudinary from "../config/Cloudinary.js";
+import { qaModel } from "../model/QASchema.js";
 import { userModel } from "../model/userSchema.js";
 
 const updateErrorMessage = `oops! couldn't create!`;
@@ -8,9 +9,13 @@ export const profileControllers = {
   getRandomUserDetails: async (req, res) => {
     try {
       const user = await userModel.findOne({ email: req.headers.email });
-      const { userName, email, bio, about, profile, followers } = user;
+      console.log(user);
+      const { userName, email, bio, about, profile, followers, points, _id } =
+        user;
       const follow = followers.includes(req.headers.req_user);
       const followerCount = followers.length;
+      const askedQuestions = await qaModel.find({ userId: _id });
+      const answers = await qaModel.find({ userId: _id });
       res.status(200).json({
         status: true,
         userDetails: {
@@ -18,13 +23,18 @@ export const profileControllers = {
           about,
           email,
           follow,
+          points,
+          answers,
           profile,
           userName,
           followerCount,
+          askedQuestions,
+          answersCount: answers.length,
+          questionsCount: askedQuestions.length,
         },
       });
     } catch (error) {
-      res.status(301).json({ status: false, message: `couldn't find user` });
+      res.status(401).json({ status: false, message: `couldn't find user` });
     }
   },
 

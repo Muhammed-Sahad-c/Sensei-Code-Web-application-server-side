@@ -12,6 +12,10 @@ const usersSchema = new Schema({
     type: [String],
     unique: true,
   },
+  points: {
+    type: Number,
+    default: 0,
+  },
 });
 
 export const userModel = mongoose.model("users", usersSchema);

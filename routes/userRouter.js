@@ -52,11 +52,7 @@ router.post(
   userAuthentication,
   profileControllers.unfollowAUser
 );
-router.get(
-  "/getrandomuser",
-  userAuthentication,
-  profileControllers.getRandomUserDetails
-);
+router.get("/getrandomuser", profileControllers.getRandomUserDetails);
 router.post(
   "/updateuserdetails",
   userAuthentication,
@@ -74,6 +70,11 @@ router.post("/followauser", userAuthentication, profileControllers.followAUser);
 router.get(
   "/getunreadednotifications",
   notificationControllers.getUnreadedNotifications
+);
+router.post(
+  "/deletenotifications",
+  userAuthentication,
+  notificationControllers.deleteNotifications
 );
 
 //dashboard services

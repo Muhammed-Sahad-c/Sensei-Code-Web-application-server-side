@@ -1,3 +1,4 @@
+import http from "http";
 import cors from "cors";
 import express from "express";
 import {} from "dotenv/config";
@@ -6,15 +7,15 @@ import { connectToDataBase } from "./config/database.js";
 import { router as userRouter } from "./routes/userRouter.js";
 import { router as adminRouter } from "./routes/adminRouter.js";
 import { Server } from "socket.io";
-import http from "http";
 import { cofigureSocket } from "./config/SocketIo.js";
 
 const app = express();
 
 app.use(
   cors({
-    origin: "http://localhost:3000",
+    origin: "*",
     methods: ["GET", "POST"],
+    optionsSuccessStatus: 200,
     credentials: true,
   })
 );
