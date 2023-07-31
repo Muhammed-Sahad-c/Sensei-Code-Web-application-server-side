@@ -14,11 +14,13 @@ const qaSchema = new Schema(
         time: Array,
       },
     ],
-    votes: { type: [String], default: [] },
+    support: { type: [String], default: [] },
+    oppose: { type: [String], default: [] },
     answers: {
       type: [String],
       default: [],
     },
+    acceptedAnswer: { type: String, default: "" },
   },
   { timestamps: true }
 );

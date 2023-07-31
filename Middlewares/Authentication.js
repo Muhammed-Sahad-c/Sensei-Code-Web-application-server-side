@@ -13,10 +13,10 @@ export const userAuthentication = (req, res, next) => {
         }
       });
     } else {
-      res.json({ status: false, message: `couldn't find token` });
+      res.json({ status: false, message: `Please sign in` });
     }
   } catch (error) {
-    res.json({ status: false, message: `someting went wrong` });
+    res.json({ status: false, message: `Please sign in` });
   }
 };
 

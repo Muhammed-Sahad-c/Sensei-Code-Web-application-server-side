@@ -1,8 +1,8 @@
 import { qaModel } from "../model/QASchema.js";
 import { userModel } from "../model/userSchema.js";
+import { answerModel } from "../model/AnswerSchema.js";
 import { statusMessages } from "../constants/statusMessages.js";
 import { notificationModel } from "../model/NotificationSchema.js";
-import { answerModel } from "../model/AnswerSchema.js";
 
 export const qasectionControllers = {
   submitQuestion: async (req, res) => {
@@ -10,13 +10,10 @@ export const qasectionControllers = {
       const data = {
         userId: req.body.id,
         question: req.body.question,
-        questionHeading: req.body.questionHeading,
         questionTags: req.body.questionTags,
+        questionHeading: req.body.questionHeading,
       };
       const response = await qaModel.create(data);
-      const userData = await userModel.findOne({ _id: data.userId });
-      userData.points += 10;
-      const updatePoints = await userData.save();
       res.json({ status: true });
     } catch (error) {
       res.json({ status: false, message: "something went wrong!" });
@@ -33,12 +30,13 @@ export const qasectionControllers = {
         response.push({
           questionId: item._id,
           userMail: item.userId.email,
-          votesCount: item.votes.length || 0,
           question: item.questionHeading,
           userName: item.userId.userName,
           comments: item.comments.length,
           questionTags: item.questionTags,
           answersCount: item.answers.length,
+          acceptedAnswer: item.acceptedAnswer,
+          votesCount: item.support.length || 0,
           time: item.createdAt.toString().split(" "),
         });
       }
@@ -59,14 +57,16 @@ export const qasectionControllers = {
       res.status(200).json({
         status: true,
         details: {
-          votes: data.votes.length,
+          oppose: data.oppose,
+          support: data.support,
+          comments: data.comments,
           email: data.userId.email,
+          createdAt: data.createdAt,
           questionPage: data.question,
           userName: data.userId.userName,
           question: data.questionHeading,
           questionTags: data.questionTags,
-          comments: data.comments.reverse(),
-          haveVoted: data.votes.includes(req.headers.req_email),
+          acceptedAnswer: data.acceptedAnswer,
         },
       });
     } catch (error) {
@@ -114,7 +114,7 @@ export const qasectionControllers = {
       }
       res.status(201).json({ status: true });
     } catch (error) {
-      res.status(301).json({ status: false, message: `couldn't create` });
+      res.status(301).json({ status: false, message: statusMessages[0] });
       throw error;
     }
   },
@@ -136,7 +136,7 @@ export const qasectionControllers = {
         res.status(201).json({ status: true });
       }
     } catch (error) {
-      res.status(301).json({ status: false, message: `something wen't wrong` });
+      res.status(301).json({ status: false, message: statusMessages[0] });
     }
   },
 
@@ -177,15 +177,12 @@ export const qasectionControllers = {
       );
       res.status(201).json({ status: true });
     } catch (error) {
-      res
-        .status(301)
-        .json({ status: false, message: `something went wrong try again!` });
+      res.status(301).json({ status: false, message: statusMessages[0] });
     }
   },
 
   getAllAnswersForTheQuestion: async (req, res) => {
     try {
-      console.log(req.headers.questionid);
       const answers = await answerModel
         .find({
           questionId: req.headers.questionid,
@@ -193,9 +190,119 @@ export const qasectionControllers = {
         .populate("userId", ["userName", "email", "profile"]);
       res.status(200).json({ status: true, answers: answers });
     } catch (error) {
+      res.status(301).json({ status: false, message: statusMessages[0] });
+    }
+  },
+
+  updateUserSupportVote: async (req, res) => {
+    try {
+      const { doc_id, email, id, reputation_owner_email, isOpposed } = req.body;
+      if (req.body.type === "QUESTION") {
+        const updateSupportInDb = await qaModel.updateOne(
+          { _id: doc_id },
+          { $push: { support: email }, $pull: { oppose: email } }
+        );
+        const userData = await userModel.findOne({
+          email: reputation_owner_email,
+        });
+        userData.reputation += isOpposed ? 7 : 5;
+        const updatePoints = await userData.save();
+        res.status(201).json({ status: true });
+      } else {
+        const updateUserAnswerSupportInDb = await answerModel.updateOne(
+          { _id: doc_id },
+          { $push: { support: email }, $pull: { oppose: email } }
+        );
+        const userData = await userModel.findOne({
+          email: reputation_owner_email,
+        });
+        userData.reputation += isOpposed ? 7 : 5;
+        const updatePoints = await userData.save();
+        res.status(201).json({ status: true });
+      }
+    } catch (error) {
+      res.status(401).json({ status: false, message: statusMessages[0] });
+      throw error;
+    }
+  },
+
+  updateUserOpposeVote: async (req, res) => {
+    try {
+      if (req.body.type === "QUESTION") {
+        const { doc_id, email, reputation_owner_email, isSupported, id } =
+          req.body;
+        const updateOpposeVoteInDb = await qaModel.updateOne(
+          { _id: doc_id },
+          { $push: { oppose: email }, $pull: { support: email } }
+        );
+        const userData = await userModel.findOne({
+          email: reputation_owner_email,
+        });
+        userData.reputation -= isSupported ? 7 : 2;
+        const updatePoints = await userData.save();
+        res.status(201).json({ status: true });
+      } else {
+        const { type, doc_id, reputation_owner_email, email, isSupported, id } =
+          req.body;
+        const updateOpposeVoteInDb = await answerModel.updateOne(
+          { _id: doc_id },
+          { $push: { oppose: email }, $pull: { support: email } }
+        );
+        const userData = await userModel.findOne({
+          email: reputation_owner_email,
+        });
+        userData.reputation -= isSupported ? 7 : 2;
+        const updatePoints = await userData.save();
+        res.status(201).json({ status: true });
+      }
+    } catch (error) {
+      res.status(401).json({ status: false, message: statusMessages[0] });
+      throw error;
+    }
+  },
+
+  updateAcceptedAnswer: async (req, res) => {
+    try {
+      const { newAnswerId, oldAnswerId, id, questionId, userName } = req.body;
+
+      if (oldAnswerId !== "") {
+        const udpateAnswer = await answerModel.updateOne(
+          { _id: oldAnswerId },
+          { accepted: false }
+        );
+      }
+      const udpateAnswer = await answerModel.updateOne(
+        { _id: newAnswerId },
+        { accepted: true }
+      );
+      const updateQuestion = await qaModel.updateOne(
+        { _id: questionId },
+        { acceptedAnswer: newAnswerId }
+      );
       res
-        .status(301)
-        .json({ status: false, message: `something went wrong try again!` });
+        .status(201)
+        .json({ status: true, message: `accepted ${userName}'s answer` });
+    } catch (error) {
+      res.status(401).json({ status: false, message: statusMessages[1] });
+      throw error;
+    }
+  },
+
+  removeAcceptedAnswer: async (req, res) => {
+    try {
+      const { newAnswerId, questionId } = req.body;
+      const udpateAnswer = await answerModel.updateOne(
+        { _id: newAnswerId },
+        { accepted: false }
+      );
+      const updateQuestion = await qaModel.updateOne(
+        { _id: questionId },
+        { acceptedAnswer: "" }
+      );
+      res.status(201).json({ status: true });
+    } catch (error) {
+      res.status(401).json({ status: false, message: statusMessages[1] });
+      throw error;
     }
   },
 };
