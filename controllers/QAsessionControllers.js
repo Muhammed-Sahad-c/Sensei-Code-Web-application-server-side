@@ -1,7 +1,7 @@
 import { qaModel } from "../model/QASchema.js";
 import { userModel } from "../model/userSchema.js";
 import { answerModel } from "../model/AnswerSchema.js";
-import { statusMessages } from "../constants/statusMessages.js";
+import { statusMessages } from "../constants/StatusMessages.js";
 import { notificationModel } from "../model/NotificationSchema.js";
 
 export const qasectionControllers = {
